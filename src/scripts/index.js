@@ -1,4 +1,4 @@
-
+import '../less/style.css';
 
 var myMap;
 
