@@ -1,0 +1,29 @@
+{
+  "name": "geo-review",
+  "version": "0.9.0",
+  "description": "API YMap",
+  "main": "index.html",
+  "scripts": {
+    "test": "npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pavelgq/geo-review.git"
+  },
+  "keywords": [
+    "API"
+  ],
+  "author": "Gordeev Pavel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pavelgq/geo-review/issues"
+  },
+  "homepage": "https://github.com/Pavelgq/geo-review#readme",
+  "devDependencies": {
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "lodash": "^4.17.15"
+  }
+}
