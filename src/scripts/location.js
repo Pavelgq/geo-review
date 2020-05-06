@@ -1,5 +1,3 @@
-import '../less/style.css';
-
 var myMap;
 
 // Дождёмся загрузки API и готовности DOM.
@@ -11,8 +9,8 @@ function init () {
     myMap = new ymaps.Map('map', {
         // При инициализации карты обязательно нужно указать
         // её центр и коэффициент масштабирования.
-        center: [55.76, 37.64], // Москва
-        zoom: 10
+        center: [59.91, 30.31], // Москва
+        zoom: 11
     }, {
         searchControlProvider: 'yandex#search'
     });
