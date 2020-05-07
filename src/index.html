@@ -49,6 +49,30 @@
     </li>
   </template>
 
+<script type="text/x-handlebars-template" id="review-list">
+    <ul class="review__list">
+      {{#if list}}
+        {{#each list}}
+          <li class="review__item">
+            <div class="review__title">
+              <span class="review__author">{{name}}</span>
+              <span class="review__place">{{place}}</span>
+              <span class="data">{{formateDate date}}</span>
+            </div>
+            <div class="review__content">
+              <span class="review__text">{{text}}</span>
+            </div>
+          </li>
+        {{/each}}
+      {{else}}
+          <li class="review__item">
+            <div class="review__content">
+              <span class="review__text">Здесь еще никто не писал</span>
+            </div>
+          </li>
+    </ul>
+</script>
+
 </body>
 
 </html>
