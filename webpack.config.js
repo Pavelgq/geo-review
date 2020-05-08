@@ -31,7 +31,7 @@ module.exports = {
     }),
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
-      filename: "[name].[contenthash].css"
+      filename: "[name]-[contenthash].css"
     }),
     new CopyWebpackPlugin([{
         from: './src/assets/images',

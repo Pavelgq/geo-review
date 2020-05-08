@@ -7,6 +7,7 @@
   <title>Геоотзыв</title>
   <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=55622ebe-0ee2-4d2d-9024-548b6fb2a0af"
     type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
 
 <body>
   <div id="map"></div>
@@ -40,14 +41,14 @@
     </div>
   </template>
   
-  <template id="reviews-template">
+  <!-- <template id="reviews-template">
     <li class="reviews__item">
       <span class="reviews__name"></span>
       <span class="reviews__place"></span>
       <span class="reviews__date"></span>
       <p class="reviews__impression"></p>
     </li>
-  </template>
+  </template> -->
 
 <script type="text/x-handlebars-template" id="review-list">
     <ul class="review__list">
@@ -57,7 +58,7 @@
             <div class="review__title">
               <span class="review__author">{{name}}</span>
               <span class="review__place">{{place}}</span>
-              <span class="data">{{formateDate date}}</span>
+              <span class="data">{{date}}</span> 
             </div>
             <div class="review__content">
               <span class="review__text">{{text}}</span>
@@ -70,9 +71,10 @@
               <span class="review__text">Здесь еще никто не писал</span>
             </div>
           </li>
+      {{/if}}
     </ul>
 </script>
-
+<!-- formateDate  -->
 </body>
 
 </html>
