@@ -11,7 +11,7 @@ function init() {
         searchControlProvider: 'yandex#search'
     });
 
-    myMap.events.add('click', addReview.bind(event));
+
 }
 
 var context = {
@@ -30,36 +30,31 @@ var context = {
     ]
 };
 
+myMap.events.add('click', addReview(event));
 
-
-const card = document.querySelector("#dropbox-form").innerHTML;
+const card = document.querySelector("#review-list").innerHTML;
 
 
 
 function getTemplate() {
     var template = Handlebars.compile(card);
     var cardHTML = template(context);
-    return cardHTML;
+    return cardHTML.innerHTML;
 }
 
 function addReview(event) {
     var coords = event.get('coords');
-    var pagePx = event.get('pagePixels');
-    var x = pagePx[0].toPrecision(6);
-    var y = pagePx[1].toPrecision(6);
 
-    var adress = getAddress(coords);
-    var root = document.createElement('div');
+    var x = coords[0].toPrecision(6);
+    var y = coords[1].toPrecision(6);
+
+    var block = document.createElement('div');
+    block.style.position = 'absolute';
+    block.style.top = '' + x;
+    block.style.left = '' + y;
     
-    root.innerHTML = getTemplate();
-    var adr = root.querySelector('.dropbox__title');
-    adr.innerHTML = adress;
-    map.appendChild(root);
-    var block = root.querySelector('.dropbox__overlay');
-    block.style.top =  y + 'px';
-    block.style.left = x + 'px';
-    
-    
+    block.innerHTML = getTemplate();
+    map.appendChild(block);
 }
 
 function placeCheck(event) {
@@ -85,12 +80,4 @@ function placeCheck(event) {
         iconColor: '#0095b6'
     });
 
-}
-
-// Определяем адрес по координатам (обратное геокодирование).
-async function getAddress(coords) {
-    await ymaps.geocode(coords).then(function (res) {
-        var firstGeoObject = res.geoObjects.get(0);
-        return firstGeoObject.getAddressLine();
-    });
 }

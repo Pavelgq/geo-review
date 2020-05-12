@@ -7,13 +7,12 @@
   <title>Геоотзыв</title>
   <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=55622ebe-0ee2-4d2d-9024-548b6fb2a0af"
     type="text/javascript"></script>
-    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
 
 <body>
   <div id="map"></div>
-  
 
-  <template id="dropbox-template">
+  <script type="text/x-handlebars-template" id="dropbox-form">
     <div class="dropbox__overlay">
       <div class="dropbox">
         <div class="dropbox__header">
@@ -21,11 +20,29 @@
           <button type="button" class="dropbox__close"></button>
         </div>
         <div class="dropbox__container">
-          <div class="reviews reviews--empty">
-            <ul class="reviews__items reviews__items--empty">
-              <p class="reviews__item">Отзывов пока нет...</p>
-            </ul>
-          </div>
+          
+        {{#if list}}
+          <ul class="reviews__items">
+          {{#each list}}
+            <li class="reviews__item">
+              <div class="reviews__title">
+                <span class="reviews__name">{{name}}</span>
+                <span class="reviews__place">{{place}}</span>
+                <span class="reviews__date">{{date}}</span> 
+              </div>
+              <div class="reviews__content">
+                <span class="reviews__impression">{{text}}</span>
+              </div>
+            </li>
+          {{/each}}
+        </ul>
+      {{else}}
+        <div class="reviews reviews--empty">
+          <ul class="reviews__items">
+            <p class="reviews__item">Отзывов пока нет...</p>
+          </ul>
+        </div>
+      {{/if}}
           <div class="myreviews">
             <h2 class="myreviews__title">Ваш Отзыв</h2>
             <input type="text" name="name" class="myreviews__name" placeholder="Ваше имя">
@@ -39,42 +56,42 @@
         </div>
       </div>
     </div>
-  </template>
-  
-  <!-- <template id="reviews-template">
+  </script>
+
+  <!-- <div id="reviews-template">
     <li class="reviews__item">
-      <span class="reviews__name"></span>
-      <span class="reviews__place"></span>
-      <span class="reviews__date"></span>
+      <span class="reviews__name">kfk</span>
+      <span class="reviews__place">kfkf</span>
+      <span class="reviews__date">kfkf</span>
       <p class="reviews__impression"></p>
     </li>
-  </template> -->
+  </div> -->
 
-<script type="text/x-handlebars-template" id="review-list">
-    <ul class="review__list">
+  <script type="text/x-handlebars-template" id="reviews-list">
+    <ul class="reviews__items">
       {{#if list}}
         {{#each list}}
-          <li class="review__item">
-            <div class="review__title">
-              <span class="review__author">{{name}}</span>
-              <span class="review__place">{{place}}</span>
+          <li class="reviews__item">
+            <div class="reviews__title">
+              <span class="reviews__author">{{name}}</span>
+              <span class="reviews__place">{{place}}</span>
               <span class="data">{{date}}</span> 
             </div>
-            <div class="review__content">
-              <span class="review__text">{{text}}</span>
+            <div class="reviews__content">
+              <span class="reviews__text">{{text}}</span>
             </div>
           </li>
         {{/each}}
       {{else}}
-          <li class="review__item">
-            <div class="review__content">
-              <span class="review__text">Здесь еще никто не писал</span>
+          <li class="reviews__item">
+            <div class="reviews__content">
+              <span class="reviews__text">Здесь еще никто не писал</span>
             </div>
           </li>
       {{/if}}
     </ul>
 </script>
-<!-- formateDate  -->
+  <!-- formateDate  -->
 </body>
 
 </html>
