@@ -59,7 +59,11 @@ function addReview(event) {
     block.style.top =  y + 'px';
     block.style.left = x + 'px';
     
-    
+    var close = root.querySelector(".dropbox__close"); 
+    var save = root.querySelector(".myreviews__add");
+
+    close.onclick = closeModal;
+    save.onclick = saveReview;
 }
 
 function placeCheck(event) {
@@ -88,9 +92,23 @@ function placeCheck(event) {
 }
 
 // Определяем адрес по координатам (обратное геокодирование).
-async function getAddress(coords) {
-    await ymaps.geocode(coords).then(function (res) {
-        var firstGeoObject = res.geoObjects.get(0);
-        return firstGeoObject.getAddressLine();
+function getAddress(coords) {
+    ymaps.geocode(coords).then(function (res) {
+        firstGeoObject = res.geoObjects.get(0);
     });
+    var adress = firstGeoObject.getAddressLine();
+    return adress;
+}
+
+function closeModal(event) {
+    map.removeChild(event.currentTarget);
+
+    event.currentTarget.removeEventListener('click', closeModal);
+}
+
+function saveReview(event) {
+    map.removeChild(event.currentTarget);
+
+    event.currentTarget.removeEventListener('click', saveReview);
+
 }
