@@ -60,6 +60,7 @@ function addReview(event) {
     block.style.left = x + 'px';
     
     var close = root.querySelector(".dropbox__close"); 
+    console.log(close);
     var save = root.querySelector(".myreviews__add");
 
     close.onclick = closeModal;
@@ -101,7 +102,9 @@ function getAddress(coords) {
 }
 
 function closeModal(event) {
-    map.removeChild(event.currentTarget);
+    let box = event.currentTarget.closest(".dropbox__overlay");
+    box = box.parentNode;
+    map.removeChild(box);
 
     event.currentTarget.removeEventListener('click', closeModal);
 }
