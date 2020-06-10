@@ -1,5 +1,5 @@
 var myMap;
-
+var clusterer;
 // Дождёмся загрузки API и готовности DOM.
 ymaps.ready(init);
 
@@ -11,15 +11,56 @@ function init() {
         searchControlProvider: 'yandex#search'
     });
 
-    myMap.events.add('click', addReview.bind(event));
+    clusterer = new ymaps.Clusterer({
+        clusterDisableClickZoom: true,
+        clusterOpenBalloonOnClick: true,
+        // Устанавливаем стандартный макет балуна кластера "Карусель".
+        clusterBalloonContentLayout: 'cluster#balloonCarousel',
+        // Устанавливаем собственный макет.
+        //clusterBalloonItemContentLayout: customItemContentLayout,
+        // Устанавливаем режим открытия балуна. 
+        // В данном примере балун никогда не будет открываться в режиме панели.
+        clusterBalloonPanelMaxMapArea: 0,
+        // Устанавливаем размеры макета контента балуна (в пикселях).
+        clusterBalloonContentLayoutWidth: 200,
+        clusterBalloonContentLayoutHeight: 130,
+        // Устанавливаем максимальное количество элементов в нижней панели на одной странице
+        clusterBalloonPagerSize: 5
+        // Настройка внешнего вида нижней панели.
+        // Режим marker рекомендуется использовать с небольшим количеством элементов.
+        // clusterBalloonPagerType: 'marker',
+        // Можно отключить зацикливание списка при навигации при помощи боковых стрелок.
+        // clusterBalloonCycling: false,
+        // Можно отключить отображение меню навигации.
+        // clusterBalloonPagerVisible: false
+    });
+
+    clusterer.add(placemarks);
+    myMap.geoObjects.add(clusterer);
+
+    myMap.events.add('click', function (event) {
+        (async () => {
+            try {
+                openForm(event);
+            } catch (event) {
+                console.error(event);
+            }
+        })();
+    })
+
+    // myMap.events.add('click', openForm.bind(event));
 }
+
+var placemarks = [];
+
+
 
 var context = {
     list: [{
-            name: 'Lol',
-            place: 'lol',
+            name: 'Pavel',
+            place: 'Буквоед',
             date: new Date(),
-            text: '1234'
+            text: 'Тут норм'
         },
         {
             name: 'Lol1',
@@ -30,48 +71,94 @@ var context = {
     ]
 };
 
-
-
 const card = document.querySelector("#dropbox-form").innerHTML;
 
 
+function openForm(event) {
+    const coords = event.get('coords');
+    const pagePx = event.get('pagePixels');
+    const x = pagePx[0].toPrecision(6);
+    const y = pagePx[1].toPrecision(6);
 
+    let myPlacemark = createPlacemark(coords);
+    placemarks.push(myPlacemark);
+    myMap.geoObjects.add(myPlacemark);
+    clusterer.add(myPlacemark);
+    //myMap.geoObjects.clusterer.add(myPlacemark);
+
+    let root = document.createElement('div');
+
+    root.innerHTML = getTemplate();
+
+    map.appendChild(root);
+
+    let block = root.querySelector('.dropbox__overlay');
+    block.style.top = y + 'px';
+    block.style.left = x + 'px';
+
+    let addressContain = root.querySelector('.dropbox__title');
+    getAddress(coords, addressContain);
+
+
+    const close = root.querySelector(".dropbox__close");
+    const save = root.querySelector(".myreviews__add");
+
+    close.onclick = closeModal;
+    save.onclick = makeReview;
+}
+
+/**
+ * Модернизирует шаблон под данные
+ */
 function getTemplate() {
     var template = Handlebars.compile(card);
     var cardHTML = template(context);
     return cardHTML;
 }
 
-function addReview(event) {
-    var coords = event.get('coords');
-    var pagePx = event.get('pagePixels');
-    var x = pagePx[0].toPrecision(6);
-    var y = pagePx[1].toPrecision(6);
 
-    var adress = getAddress(coords);
-    var root = document.createElement('div');
-    
-    root.innerHTML = getTemplate();
-    var adr = root.querySelector('.dropbox__title');
-    adr.innerHTML = adress;
-    map.appendChild(root);
-    var block = root.querySelector('.dropbox__overlay');
-    block.style.top =  y + 'px';
-    block.style.left = x + 'px';
-    
-    var close = root.querySelector(".dropbox__close"); 
-    console.log(close);
-    var save = root.querySelector(".myreviews__add");
+function createPlacemark(coords) {
+    let placemark =  new ymaps.Placemark(coords, {
+        openBalloonOnClick: false,
+        balloonContentHeader: "newReview.place",
+        balloonContentLink: "point.address",
+        balloonContentBody: "newReview.textReview",
+        balloonContentFooter: "newReview.date",
+        balloonContentCoords: "point.coords",
+    }, {
+        preset: 'islands#darkOrangeIcon'
+    });
 
-    close.onclick = closeModal;
-    save.onclick = saveReview;
+   placemark.events.add('click', openPlacemark(event));
+    return placemark;
+}
+
+function openPlacemark(event) {
+    // const coords = event.get('coords');
+    // const pagePx = event.get('pagePixels');
+    // const x = pagePx[0].toPrecision(6);
+    // const y = pagePx[1].toPrecision(6);
+
+    // let root = document.createElement('div');
+
+    // root.innerHTML = getTemplate();
+
+    // map.appendChild(root);
+
+    // let block = root.querySelector('.dropbox__overlay');
+    // block.style.top = y + 'px';
+    // block.style.left = x + 'px';
+
+    // let addressContain = root.querySelector('.dropbox__title');
+
+    console.log(event)
 }
 
 function placeCheck(event) {
 
     console.log("click");
 
-    var coords = e.get('coords');
+    var coords = event.get('coords');
 
     myGeoObject = new ymaps.GeoObject({
         geometry: {
@@ -93,12 +180,12 @@ function placeCheck(event) {
 }
 
 // Определяем адрес по координатам (обратное геокодирование).
-function getAddress(coords) {
+function getAddress(coords, addressContain) {
     ymaps.geocode(coords).then(function (res) {
-        firstGeoObject = res.geoObjects.get(0);
+        const firstGeoObject = res.geoObjects.get(0);
+
+        addressContain.innerText = firstGeoObject.getAddressLine();
     });
-    var adress = firstGeoObject.getAddressLine();
-    return adress;
 }
 
 function closeModal(event) {
@@ -109,9 +196,13 @@ function closeModal(event) {
     event.currentTarget.removeEventListener('click', closeModal);
 }
 
-function saveReview(event) {
-    map.removeChild(event.currentTarget);
+function makeReview(event) {
 
-    event.currentTarget.removeEventListener('click', saveReview);
+
+    let box = event.currentTarget.closest(".dropbox__overlay");
+    box = box.parentNode;
+    map.removeChild(box);
+
+    event.currentTarget.removeEventListener('click', makeReview);
 
 }
