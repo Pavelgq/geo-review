@@ -41,7 +41,7 @@ function init() {
     myMap.events.add('click', function (event) {
         (async () => {
             try {
-                openForm(event);
+                openForm(event, initialState);
             } catch (event) {
                 console.error(event);
             }
@@ -53,28 +53,20 @@ function init() {
 
 var placemarks = [];
 
-
+var initialState = {
+    list: [
+    ]
+};
 
 var context = {
-    list: [{
-            name: 'Pavel',
-            place: 'Буквоед',
-            date: new Date(),
-            text: 'Тут норм'
-        },
-        {
-            name: 'Lol1',
-            place: 'lol',
-            date: new Date(),
-            text: '1234'
-        }
+    list: [
     ]
 };
 
 const card = document.querySelector("#dropbox-form").innerHTML;
 
 
-function openForm(event) {
+function openForm(event, content) {
     let box = document.querySelector(".dropbox__overlay");
 
     if (box !== null) {
@@ -91,7 +83,7 @@ function openForm(event) {
 
     let root = document.createElement('div');
 
-    root.innerHTML = getTemplate();
+    root.innerHTML = getTemplate(content);
 
     map.appendChild(root);
 
@@ -105,8 +97,8 @@ function openForm(event) {
     const close = root.querySelector(".dropbox__close");
     const save = root.querySelector(".myreviews__add");
 
-    save.addEventListener('click', function (event) {
-        makeReview(event, coords);
+    save.addEventListener('click', function (e) {
+        makeReview(e, event, coords);
 
     });
     close.onclick = closeModal;
@@ -115,24 +107,27 @@ function openForm(event) {
 /**
  * Модернизирует шаблон под данные
  */
-function getTemplate() {
+function getTemplate(content) {
     var template = Handlebars.compile(card);
-    var cardHTML = template(context);
+    var cardHTML = template(content);
     return cardHTML;
 }
 
 
-function createPlacemark(coords) {
+function createPlacemark(coords, data) {
+    let addressContain = document.querySelector('.dropbox__title');
+    getAddress(coords, addressContain);
+
     let placemark = new ymaps.Placemark(coords, {
         openBalloonOnClick: false,
-        balloonContentHeader: "newReview.place",
-        balloonContentLink: "point.address",
-        balloonContentBody: "newReview.textReview",
-        balloonContentFooter: "newReview.date",
-        balloonContentCoords: "point.coords",
+        balloonContentHeader: data.place,
+        balloonContentBody: `<a class="balloon__address_link">${addressContain.innerText}</a><br><br> ${data.text}`,
+        balloonContentFooter: data.date,
+        balloonContentCoords: data.coords,
     }, {
         preset: 'islands#darkOrangeIcon'
     });
+
 
     placemark.events.add('click', function (event) {
         (async () => {
@@ -146,58 +141,23 @@ function createPlacemark(coords) {
     return placemark;
 }
 
-function openPlacemark(event) {
-    // const coords = event.get('coords');
-    // const pagePx = event.get('pagePixels');
-    // const x = pagePx[0].toPrecision(6);
-    // const y = pagePx[1].toPrecision(6);
+function openPlacemark(event, coords) {
+    if (coords === undefined) {
+        coords = event.get('coords');
+    }
+    
+    let content = {
+        list: []
+    }
 
-    // let root = document.createElement('div');
-
-    // root.innerHTML = getTemplate();
-
-    // map.appendChild(root);
-
-    // let block = root.querySelector('.dropbox__overlay');
-    // block.style.top = y + 'px';
-    // block.style.left = x + 'px';
-
-    // let addressContain = root.querySelector('.dropbox__title');
-    const coords = event.get('coords');
-    console.log(coords);
-
-    var eMap = event.get('target');
-    console.log(eMap);
-
-    var eType = event.get('type');
-    console.log(eType);
-
-}
-
-function placeCheck(event) {
-
-    console.log("click");
-
-    var coords = event.get('coords');
-
-    myGeoObject = new ymaps.GeoObject({
-        geometry: {
-            type: "Point",
-            coordinates: [coords[0].toPrecision(6), coords[1].toPrecision(6)]
-        }, // Свойства.
-        properties: {
-            // Контент метки.
-            iconContent: '',
-            hintContent: ''
+    context.list.forEach(element => {
+        if (element.coords.x === coords.x && element.coords.y === coords.y) {
+            content.list.push(element);
         }
-    }, {
-        // Опции.
-        // Иконка метки будет растягиваться под размер ее содержимого.
-        preset: 'islands#icon',
-        iconColor: '#0095b6'
     });
-
+    openForm(event, content); 
 }
+
 
 // Определяем адрес по координатам (обратное геокодирование).
 function getAddress(coords, addressContain) {
@@ -216,32 +176,48 @@ function closeModal(event) {
     event.currentTarget.removeEventListener('click', closeModal);
 }
 
-function makeReview(event, coords) {
+function makeReview(event, mapEvent, coords) {
     let root = document.querySelector('.dropbox__overlay');
     let name = root.querySelector(".myreviews__name");
     let place = root.querySelector(".myreviews__place");
     let impression = root.querySelector(".myreviews__impression");
 
     if (name.value && place.value && impression.value) {
-        let myPlacemark = createPlacemark(coords);
+        let data = {
+            name: name.value,
+            place: place.value,
+            date: new Date(),
+            text: impression.value,
+            coords: coords
+        };
+        let myPlacemark = createPlacemark(coords, data);
         placemarks.push(myPlacemark);
         myMap.geoObjects.add(myPlacemark);
         clusterer.add(myPlacemark);
 
-        context.list.push({
-            name: name,
-            place: place,
-            date: new Date(),
-            text: impression
-        });
+        let link = document.querySelectorAll(".balloon__address_link");
+        if (link.length !== 0) {
+            link.forEach(element => {
+                element.addEventListener('click', function (e) {
+                    openPlacemark(mapEvent, coords);
+                });
+            });
+        }
+        
+
+        context.list.push(data);
 
         console.log(event);
-        
-        let box = event.currentTarget.closest(".dropbox__overlay");
+
+        console.log(mapEvent);
+
+        let box = document.querySelector(".dropbox__overlay");
         box = box.parentNode;
         map.removeChild(box);
 
-        event.currentTarget.removeEventListener('click', makeReview);
+        
+
+        openPlacemark(mapEvent, coords);
     } else {
         alert('Вы не заполнили все поля');
     }
