@@ -75,16 +75,19 @@ const card = document.querySelector("#dropbox-form").innerHTML;
 
 
 function openForm(event) {
+    let box = document.querySelector(".dropbox__overlay");
+
+    if (box !== null) {
+        box = box.parentNode;
+        map.removeChild(box);
+    }
+
     const coords = event.get('coords');
     const pagePx = event.get('pagePixels');
     const x = pagePx[0].toPrecision(6);
     const y = pagePx[1].toPrecision(6);
 
-    let myPlacemark = createPlacemark(coords);
-    placemarks.push(myPlacemark);
-    myMap.geoObjects.add(myPlacemark);
-    clusterer.add(myPlacemark);
-    //myMap.geoObjects.clusterer.add(myPlacemark);
+
 
     let root = document.createElement('div');
 
@@ -99,12 +102,14 @@ function openForm(event) {
     let addressContain = root.querySelector('.dropbox__title');
     getAddress(coords, addressContain);
 
-
     const close = root.querySelector(".dropbox__close");
     const save = root.querySelector(".myreviews__add");
 
+    save.addEventListener('click', function (event) {
+        makeReview(event, coords);
+
+    });
     close.onclick = closeModal;
-    save.onclick = makeReview;
 }
 
 /**
@@ -118,7 +123,7 @@ function getTemplate() {
 
 
 function createPlacemark(coords) {
-    let placemark =  new ymaps.Placemark(coords, {
+    let placemark = new ymaps.Placemark(coords, {
         openBalloonOnClick: false,
         balloonContentHeader: "newReview.place",
         balloonContentLink: "point.address",
@@ -129,7 +134,15 @@ function createPlacemark(coords) {
         preset: 'islands#darkOrangeIcon'
     });
 
-   placemark.events.add('click', openPlacemark(event));
+    placemark.events.add('click', function (event) {
+        (async () => {
+            try {
+                openPlacemark(event);
+            } catch (event) {
+                console.error(event);
+            }
+        })();
+    }, placemark);
     return placemark;
 }
 
@@ -150,8 +163,15 @@ function openPlacemark(event) {
     // block.style.left = x + 'px';
 
     // let addressContain = root.querySelector('.dropbox__title');
+    const coords = event.get('coords');
+    console.log(coords);
 
-    console.log(event)
+    var eMap = event.get('target');
+    console.log(eMap);
+
+    var eType = event.get('type');
+    console.log(eType);
+
 }
 
 function placeCheck(event) {
@@ -189,20 +209,44 @@ function getAddress(coords, addressContain) {
 }
 
 function closeModal(event) {
-    let box = event.currentTarget.closest(".dropbox__overlay");
+    let box = document.querySelector(".dropbox__overlay");
     box = box.parentNode;
     map.removeChild(box);
 
     event.currentTarget.removeEventListener('click', closeModal);
 }
 
-function makeReview(event) {
+function makeReview(event, coords) {
+    let root = document.querySelector('.dropbox__overlay');
+    let name = root.querySelector(".myreviews__name");
+    let place = root.querySelector(".myreviews__place");
+    let impression = root.querySelector(".myreviews__impression");
+
+    if (name.value && place.value && impression.value) {
+        let myPlacemark = createPlacemark(coords);
+        placemarks.push(myPlacemark);
+        myMap.geoObjects.add(myPlacemark);
+        clusterer.add(myPlacemark);
+
+        context.list.push({
+            name: name,
+            place: place,
+            date: new Date(),
+            text: impression
+        });
+
+        console.log(event);
+        
+        let box = event.currentTarget.closest(".dropbox__overlay");
+        box = box.parentNode;
+        map.removeChild(box);
+
+        event.currentTarget.removeEventListener('click', makeReview);
+    } else {
+        alert('Вы не заполнили все поля');
+    }
 
 
-    let box = event.currentTarget.closest(".dropbox__overlay");
-    box = box.parentNode;
-    map.removeChild(box);
 
-    event.currentTarget.removeEventListener('click', makeReview);
 
 }
