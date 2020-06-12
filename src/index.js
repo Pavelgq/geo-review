@@ -1,2 +1,2 @@
 import './less/style.less';
-import './scripts/location'
+import './scripts/map'

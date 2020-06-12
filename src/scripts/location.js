@@ -1,38 +1,51 @@
 var myMap;
+
 var clusterer;
 // Дождёмся загрузки API и готовности DOM.
 ymaps.ready(init);
 
 function init() {
     myMap = new ymaps.Map('map', {
-        center: [59.91, 30.31], // Москва
+        center: [59.91, 30.31], // Санкт-Петербург
         zoom: 11
     }, {
         searchControlProvider: 'yandex#search'
     });
 
+    const customItemContentLayout = ymaps.templateLayoutFactory.createClass(
+        `<div class="ballon__header">
+            <div class="title">{{ properties.place }}</div>
+            <button class="address">{{ properties.address }}</button>
+        </div>
+        <div class="ballon__body">{{ properties.comment }}</div>`, {
+            build: function () {
+                customItemContentLayout.superclass.build.call(this);
+    
+                const elemAddress = this.getElement().querySelector(".address");
+                const coords = this.getData().geoObject.geometry.getCoordinates();
+                getAddress(coords).then(address => {
+                    elemAddress.innerText = address;
+                });
+                elemAddress.addEventListener("click", e => {
+                    e.preventDefault();
+                    openBalloon(coords);
+                });
+            }
+        }
+    );
+    
     clusterer = new ymaps.Clusterer({
+        preset: "islands#invertedVioletClusterIcons",
         clusterDisableClickZoom: true,
         clusterOpenBalloonOnClick: true,
-        // Устанавливаем стандартный макет балуна кластера "Карусель".
-        clusterBalloonContentLayout: 'cluster#balloonCarousel',
-        // Устанавливаем собственный макет.
-        //clusterBalloonItemContentLayout: customItemContentLayout,
-        // Устанавливаем режим открытия балуна. 
-        // В данном примере балун никогда не будет открываться в режиме панели.
+        hideIconOnBalloonOpen: false,
+        openBalloonOnClick: true,
+        clusterBalloonContentLayout: "cluster#balloonCarousel",
+        clusterBalloonItemContentLayout: customItemContentLayout,
         clusterBalloonPanelMaxMapArea: 0,
-        // Устанавливаем размеры макета контента балуна (в пикселях).
         clusterBalloonContentLayoutWidth: 200,
-        clusterBalloonContentLayoutHeight: 130,
-        // Устанавливаем максимальное количество элементов в нижней панели на одной странице
+        clusterBalloonContentLayoutHeight: 150,
         clusterBalloonPagerSize: 5
-        // Настройка внешнего вида нижней панели.
-        // Режим marker рекомендуется использовать с небольшим количеством элементов.
-        // clusterBalloonPagerType: 'marker',
-        // Можно отключить зацикливание списка при навигации при помощи боковых стрелок.
-        // clusterBalloonCycling: false,
-        // Можно отключить отображение меню навигации.
-        // clusterBalloonPagerVisible: false
     });
 
     clusterer.add(placemarks);
@@ -54,16 +67,19 @@ function init() {
 var placemarks = [];
 
 var initialState = {
-    list: [
-    ]
+    list: []
 };
 
 var context = {
-    list: [
-    ]
+    list: []
 };
 
+
+
 const card = document.querySelector("#dropbox-form").innerHTML;
+
+
+
 
 
 function openForm(event, content) {
@@ -119,13 +135,19 @@ function createPlacemark(coords, data) {
     getAddress(coords, addressContain);
 
     let placemark = new ymaps.Placemark(coords, {
-        openBalloonOnClick: false,
-        balloonContentHeader: data.place,
-        balloonContentBody: `<a class="balloon__address_link">${addressContain.innerText}</a><br><br> ${data.text}`,
-        balloonContentFooter: data.date,
-        balloonContentCoords: data.coords,
+        // balloonContentHeader: data.place,
+        // balloonContentBody: `<a class="balloon__address_link">${addressContain.innerText}</a><br><br> ${data.text}`,
+        // balloonContentFooter: data.date,
+        // balloonContentCoords: data.coords,
+
+        place: data.place,
+        comment: data.text
+
     }, {
-        preset: 'islands#darkOrangeIcon'
+        balloonShadow: false,
+        balloonPanelMaxMapArea: 0,
+        hideIconOnBalloonOpen: false,
+        preset: "islands#violetDotIcon"
     });
 
 
@@ -145,7 +167,7 @@ function openPlacemark(event, coords) {
     if (coords === undefined) {
         coords = event.get('coords');
     }
-    
+
     let content = {
         list: []
     }
@@ -155,7 +177,7 @@ function openPlacemark(event, coords) {
             content.list.push(element);
         }
     });
-    openForm(event, content); 
+    openForm(event, content);
 }
 
 
@@ -203,7 +225,7 @@ function makeReview(event, mapEvent, coords) {
                 });
             });
         }
-        
+
 
         context.list.push(data);
 
@@ -215,7 +237,7 @@ function makeReview(event, mapEvent, coords) {
         box = box.parentNode;
         map.removeChild(box);
 
-        
+
 
         openPlacemark(mapEvent, coords);
     } else {
