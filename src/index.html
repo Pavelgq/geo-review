@@ -58,40 +58,6 @@
     </div>
   </script>
 
-  <!-- <div id="reviews-template">
-    <li class="reviews__item">
-      <span class="reviews__name">kfk</span>
-      <span class="reviews__place">kfkf</span>
-      <span class="reviews__date">kfkf</span>
-      <p class="reviews__impression"></p>
-    </li>
-  </div> -->
-
-  <script type="text/x-handlebars-template" id="reviews-list">
-    <ul class="reviews__items">
-      {{#if list}}
-        {{#each list}}
-          <li class="reviews__item">
-            <div class="reviews__title">
-              <span class="reviews__author">{{name}}</span>
-              <span class="reviews__place">{{place}}</span>
-              <span class="data">{{date}}</span> 
-            </div>
-            <div class="reviews__content">
-              <span class="reviews__text">{{text}}</span>
-            </div>
-          </li>
-        {{/each}}
-      {{else}}
-          <li class="reviews__item">
-            <div class="reviews__content">
-              <span class="reviews__text">Здесь еще никто не писал</span>
-            </div>
-          </li>
-      {{/if}}
-    </ul>
-</script>
-  <!-- formateDate  -->
 </body>
 
 </html>

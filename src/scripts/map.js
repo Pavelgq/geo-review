@@ -1,15 +1,14 @@
 'use strict';
 
-var myMap;
-
-const card = document.querySelector("#dropbox-form").innerHTML;
-
-let clusterer;
-
-let content = loadContent();
+let myMap,
+    clusterer,
+    content;
 
 ymaps.ready(init);
 
+/**
+ * Инициализация карты, создание кластеризатора
+ */
 function init() {
     myMap = new ymaps.Map('map', {
         center: [59.91, 30.31],
@@ -31,8 +30,16 @@ function init() {
                 const elemAddress = this.getElement().querySelector(".address");
                 const coords = this.getData().geoObject.geometry.getCoordinates();
 
-                console.log(coords);
-                console.log(this);
+
+                ymaps.geocode(coords).then((result) => {
+                    return result.geoObjects.get(0).getAddressLine();
+                }).then(address => {
+                    elemAddress.innerText = address;
+                });
+                elemAddress.addEventListener("click", event => {
+                    event.preventDefault();
+                    openForm(coords);
+                });
             }
         }
     );
@@ -69,13 +76,29 @@ function init() {
             openForm(event.get("target").geometry.getCoordinates());
         }
     });
+
+    content = loadContent();
 }
 
+/**
+ * Загрузка и отрисовка отзывов из хранилища
+ */
 function loadContent() {
     let reviewsMap = localStorage.getItem("content") || `{"list": []}`;
-    return JSON.parse(reviewsMap);
+    let data = JSON.parse(reviewsMap);
+    if (data.list.length !== 0) {
+        data.list.forEach(element => {
+            const myPlacemark = createPlacemark(element);
+            clusterer.add(myPlacemark);
+        });
+    }
+    return data;
 }
 
+/**
+ * Генерация и обработка формы в зависимости от координат
+ * @param {array} coords 
+ */
 function openForm(coords) {
     myMap.balloon.close();
 
@@ -84,7 +107,10 @@ function openForm(coords) {
     ymaps.geocode(coords).then((result) => {
         return result.geoObjects.get(0).getAddressLine();
     }).then(address => {
-        let contentPlace = {list: []};
+
+        let contentPlace = {
+            list: []
+        };
         content.list.forEach(element => {
             if (element.coords[0] === coords[0] && element.coords[1] === coords[1]) {
                 contentPlace.list.push(element);
@@ -104,8 +130,6 @@ function openForm(coords) {
             map.appendChild(root);
         }
 
-        root.style.width = "380px";
-        root.style.height = "auto";
         let form = root.querySelector(".dropbox__overlay");
         form.style.position = "absolute";
         form.style.left = document.body.offsetWidth / 2 - 290 + "px";
@@ -137,44 +161,43 @@ function openForm(coords) {
                 coords: coords
             };
 
-            if (review.name && review.place && review.comment) {
-                const myPlacemark = createPlacemark(coords, review);
+            if (review.name && review.place && review.text) {
+                const myPlacemark = createPlacemark(review);
                 clusterer.add(myPlacemark);
                 content.list.push(review);
+                localStorage.setItem("content", JSON.stringify(content));
             } else {
                 alert("Вы заполнили не все поля");
             }
-
-           
             openForm(coords);
         });
-
-
     }).catch((error) => {
         console.error(error);
     });
-
-
 }
 
-function getAddress(coords) {
-    ymaps.geocode(coords).then((result) => {
-        return result.geoObjects.get(0).getAddressLine();
-    });
-}
 
-function getTemplate(content) {
+/**
+ * Создает разметку из шаблона и данных
+ * @param {object} data 
+ */
+function getTemplate(data) {
+    const card = document.querySelector("#dropbox-form").innerHTML;
     var template = Handlebars.compile(card);
-    var cardHTML = template(content);
+    var cardHTML = template(data);
     return cardHTML;
 }
 
-function createPlacemark(coords, data) {
+/**
+ * Создает метку с переданными значениями
+ * @param {object} data 
+ */
+function createPlacemark(data) {
 
-    let placemark = new ymaps.Placemark(coords, {
+    let placemark = new ymaps.Placemark(data.coords, {
         place: data.place,
-        comment: data.text
-
+        comment: data.text,
+        data: data.date
     }, {
         balloonShadow: false,
         balloonPanelMaxMapArea: 0,
