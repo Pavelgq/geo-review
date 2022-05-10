@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><link href="main-9f7105ebecab176b3591.css" rel="stylesheet"></head><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Геоотзыв</title><script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=55622ebe-0ee2-4d2d-9024-548b6fb2a0af"></script><script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script><body><div id="map"></div><script type="text/x-handlebars-template" id="dropbox-form"><div class="dropbox__overlay">
+      <div class="dropbox">
+        <div class="dropbox__header">
+          <h1 class="dropbox__title"></h1>
+          <button type="button" class="dropbox__close"></button>
+        </div>
+        <div class="dropbox__container">
+          
+        {{#if list}}
+          <ul class="reviews__items">
+          {{#each list}}
+            <li class="reviews__item">
+              <div class="reviews__title">
+                <span class="reviews__name">{{name}}</span>
+                <span class="reviews__place">{{place}}</span>
+                <span class="reviews__date">{{date}}</span> 
+              </div>
+              <div class="reviews__content">
+                <span class="reviews__impression">{{text}}</span>
+              </div>
+            </li>
+          {{/each}}
+        </ul>
+      {{else}}
+        <div class="reviews reviews--empty">
+          <ul class="reviews__items">
+            <p class="reviews__item">Отзывов пока нет...</p>
+          </ul>
+        </div>
+      {{/if}}
+          <div class="myreviews">
+            <h2 class="myreviews__title">Ваш Отзыв</h2>
+            <input type="text" name="name" class="myreviews__name" placeholder="Ваше имя">
+            <span class="myreviews__error myreviews__error--name">Необходимо указать имя!</span>
+            <input type="text" name="place" class="myreviews__place" placeholder="Укажите место">
+            <span class="myreviews__error myreviews__error--place">Необходимо указать место!</span>
+            <textarea name="impression" class="myreviews__impression" placeholder="Поделитесь впечатлениями"></textarea>
+            <span class="myreviews__error myreviews__error--impression">Поделитесь впечатлениями!!!</span>
+            <button type="button" class="myreviews__add">Добавить</button>
+          </div>
+        </div>
+      </div>
+    </div></script><script src="main.1fdaf0110178c5d43a17.js"></script></body></head></html>
